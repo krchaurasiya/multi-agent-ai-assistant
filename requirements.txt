@@ -9,6 +9,3 @@ requests
 gradio
 crewai
 litellm
-gradio
-crewai[google-genai]
-litellm

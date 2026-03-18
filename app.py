@@ -1,9 +1,11 @@
 import gradio as gr
-from crewai import Crew, Task, Agent, LLM
+from crewai import Agent, Task, Crew, LLM
 
-# -------- LLM (Use Gemini or fallback) --------
+# ✅ Use FREE HuggingFace model via LiteLLM
 def get_llm():
-    return LLM(model="gemini/gemini-pro")
+    return LLM(
+        model="huggingface/google/flan-t5-small"
+    )
 
 # -------- Agents --------
 planner = Agent(
@@ -27,7 +29,7 @@ analyst = Agent(
     llm=get_llm()
 )
 
-# -------- Main Function --------
+# -------- Function --------
 def run_ai(query):
 
     planning_task = Task(
@@ -55,20 +57,17 @@ def run_ai(query):
     )
 
     result = crew.kickoff()
-
     return str(result)
 
-# -------- Gradio UI --------
+# -------- UI --------
 with gr.Blocks(theme=gr.themes.Monochrome()) as demo:
-    gr.Markdown("# 🤖 Multi-Agent AI Business Assistant")
+    gr.Markdown("# 🤖 Multi-Agent AI Assistant (Free Version)")
 
-    with gr.Row():
-        input_box = gr.Textbox(label="Enter your task", placeholder="e.g. Create a business plan")
+    input_box = gr.Textbox(label="Enter your task")
+    output_box = gr.Textbox(label="Output", lines=15)
 
-    output_box = gr.Textbox(label="AI Output", lines=15)
+    btn = gr.Button("🚀 Run")
 
-    run_btn = gr.Button("🚀 Run AI")
-
-    run_btn.click(fn=run_ai, inputs=input_box, outputs=output_box)
+    btn.click(fn=run_ai, inputs=input_box, outputs=output_box)
 
 demo.launch()
