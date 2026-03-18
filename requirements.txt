@@ -1,0 +1,8 @@
+crewai
+langchain
+huggingface_hub
+streamlit
+fastapi
+uvicorn
+duckduckgo-search
+requests
