@@ -5,6 +5,10 @@ streamlit
 fastapi
 uvicorn
 duckduckgo-search
-requestsgradio
+requests
+gradio
 crewai
+litellm
+gradio
+crewai[google-genai]
 litellm
