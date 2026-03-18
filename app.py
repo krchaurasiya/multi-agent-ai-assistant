@@ -1,59 +1,74 @@
-import streamlit as st
-from crewai import Crew, Task
+import gradio as gr
+from crewai import Crew, Task, Agent, LLM
 
-from agents.planner import create_planner
-from agents.executor import create_executor
-from agents.analyst import create_analyst
-#from config.memory import get_memory
+# -------- LLM (Use Gemini or fallback) --------
+def get_llm():
+    return LLM(model="gemini/gemini-pro")
 
-#memory = get_memory()
-# UI
-st.title("🤖 Multi-Agent AI Business Assistant")
+# -------- Agents --------
+planner = Agent(
+    role="Planner",
+    goal="Break down tasks into steps",
+    backstory="Expert planner",
+    llm=get_llm()
+)
 
-user_input = st.text_input("Enter your business task:")
+executor = Agent(
+    role="Executor",
+    goal="Execute tasks",
+    backstory="Expert executor",
+    llm=get_llm()
+)
 
-if st.button("Run AI System"):
+analyst = Agent(
+    role="Analyst",
+    goal="Analyze results",
+    backstory="Expert analyst",
+    llm=get_llm()
+)
 
-    planner = create_planner()
-    executor = create_executor()
-    analyst = create_analyst()
+# -------- Main Function --------
+def run_ai(query):
 
-    # Tasks
     planning_task = Task(
-        description=f"Break down this task: {user_input}",
+        description=f"Break down this task: {query}",
+        expected_output="Step-by-step plan",
         agent=planner
     )
 
     execution_task = Task(
-        description="Execute the planned steps",
+        description="Execute the plan",
+        expected_output="Execution result",
         agent=executor
     )
 
     analysis_task = Task(
-        description="Analyze results and summarize insights",
+        description="Analyze results",
+        expected_output="Final insights",
         agent=analyst
     )
 
-    # Crew
     crew = Crew(
-    agents=[planner, executor, analyst],
-    tasks=[planning_task, execution_task, analysis_task],
-    #memory=memory,
-    verbose=True
-)
+        agents=[planner, executor, analyst],
+        tasks=[planning_task, execution_task, analysis_task],
+        verbose=False
+    )
 
     result = crew.kickoff()
 
-    st.subheader("Final Output:")
-    st.write(result)
+    return str(result)
 
+# -------- Gradio UI --------
+with gr.Blocks(theme=gr.themes.Monochrome()) as demo:
+    gr.Markdown("# 🤖 Multi-Agent AI Business Assistant")
 
-# import requests
+    with gr.Row():
+        input_box = gr.Textbox(label="Enter your task", placeholder="e.g. Create a business plan")
 
-# # st.title("🤖 AI Business Assistant")
+    output_box = gr.Textbox(label="AI Output", lines=15)
 
-# # query = st.text_input("Enter your task:")
+    run_btn = gr.Button("🚀 Run AI")
 
-# if st.button("Run"):
-#     response = requests.get(f"http://localhost:8000/run?query={query}")
-#     st.write(response.json())
+    run_btn.click(fn=run_ai, inputs=input_box, outputs=output_box)
+
+demo.launch()
